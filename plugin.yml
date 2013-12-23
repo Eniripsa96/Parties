@@ -1,0 +1,12 @@
+name: Parties
+main: com.sucy.party.Parties
+version: 1.0
+author: Eniripsa96
+depend: [SkillAPI]
+
+commands:
+  pt:
+
+permissions:
+  party.general:
+    default: true
