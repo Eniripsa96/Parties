@@ -4,6 +4,8 @@ import com.rit.sucy.commands.CommandManager;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
 import com.rit.sucy.config.Filter;
+import com.rit.sucy.player.PlayerUUIDs;
+import com.rit.sucy.version.VersionPlayer;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
 import com.sucy.party.lang.ErrorNodes;
@@ -47,8 +49,7 @@ public class CmdInvite implements IFunction {
         }
 
         // Validate the player
-        UUID id = parties.getSkillAPI().getPlayerUUID(args[0]);
-        Player target = id == null ? null : plugin.getServer().getPlayer(id);
+        Player target = new VersionPlayer(args[0]).getPlayer();
         if (target == null) {
             parties.sendMessage(player, ErrorNodes.NOT_ONLINE);
             return;

@@ -14,7 +14,13 @@ Individual:
     no-response: '&4You did not respond to the invitation'
     invited:
     - '&2You have been invited to join &6{player}s &2party'
-    - '&2Type &6/pt join &2to join or &6/pt decline &2to decline'
+    - '&2Type &6/pt accept &2to join or &6/pt decline &2to decline'
+    info:
+    - '&8{break}'
+    - '&2Leader: &6{leader}'
+    - '&2Party Size: &6{size}'
+    - '&2Members: {members}'
+    - '&8{break}'
 
 Errors:
     no-invite-self: '&4You cannot invite yourself'

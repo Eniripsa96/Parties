@@ -11,6 +11,7 @@ import com.rit.sucy.text.TextFormatter;
 import com.sucy.party.command.*;
 import com.sucy.party.mccore.PartyBoardManager;
 import com.sucy.skill.SkillAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -69,6 +70,7 @@ public class Parties extends JavaPlugin {
         root.addSubCommands(
                 new ConfigurableCommand(this, "accept", SenderType.PLAYER_ONLY, new CmdAccept(), "Accepts a party request", "", PermissionNode.GENERAL),
                 new ConfigurableCommand(this, "decline", SenderType.PLAYER_ONLY, new CmdDecline(), "Declines a party request", "", PermissionNode.GENERAL),
+                new ConfigurableCommand(this, "info", SenderType.PLAYER_ONLY, new CmdInfo(), "Views party information", "", PermissionNode.GENERAL),
                 new ConfigurableCommand(this, "invite", SenderType.PLAYER_ONLY, new CmdInvite(), "Invites a player to a party", "<player>", PermissionNode.GENERAL),
                 new ConfigurableCommand(this, "leave", SenderType.PLAYER_ONLY, new CmdLeave(), "Leaves your party", "", PermissionNode.GENERAL),
                 new ConfigurableCommand(this, "message", SenderType.PLAYER_ONLY, new CmdMsg(), "Sends a message to your party", "<message>", PermissionNode.GENERAL),
@@ -169,6 +171,7 @@ public class Parties extends JavaPlugin {
      */
     public Party getParty(Player player) {
         for (Party party : parties) {
+            Bukkit.getLogger().info("Player: " + player.getName() + " Invited? " + party.isInvited(player) + " Member? " + party.isMember(player));
             if (party.isMember(player) || party.isInvited(player)) {
                 return party;
             }

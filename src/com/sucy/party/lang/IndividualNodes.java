@@ -22,6 +22,7 @@ public class IndividualNodes {
     CHAT_OFF = BASE + "chat-off",
     DECLINED = BASE + "declined",
     NO_RESPONSE = BASE + "no-response",
-    INVITED = BASE + "invited";
+    INVITED = BASE + "invited",
+    INFO = BASE + "info";
 
 }

@@ -38,8 +38,8 @@ public class PartyStats implements StatHolder {
         if (player.isOnline()) {
             Party pt = plugin.getParty(player);
             if (pt != null && !pt.isEmpty()) {
-                for (VersionPlayer member : pt.getMembers()) {
-                    Player m = member.getPlayer();
+                for (String member : pt.getMembers()) {
+                    Player m = new VersionPlayer(member).getPlayer();
                     if (m != null) {
                         stats.add(m);
                     }
@@ -56,8 +56,8 @@ public class PartyStats implements StatHolder {
         if (player.isOnline()) {
             Party pt = plugin.getParty(player);
             if (pt != null && !pt.isEmpty()) {
-                for (VersionPlayer member : pt.getMembers()) {
-                    stats.add(plugin.getSkillAPI().getPlayer(member).getLevel());
+                for (String member : pt.getMembers()) {
+                    stats.add(plugin.getSkillAPI().getPlayer(new VersionPlayer(member)).getLevel());
                 }
             }
         }

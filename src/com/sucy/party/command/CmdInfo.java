@@ -2,19 +2,24 @@ package com.sucy.party.command;
 
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
+import com.rit.sucy.config.CustomFilter;
 import com.rit.sucy.config.Filter;
+import com.rit.sucy.text.TextSizer;
+import com.rit.sucy.version.VersionPlayer;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
 import com.sucy.party.lang.ErrorNodes;
+import com.sucy.party.lang.IndividualNodes;
 import com.sucy.party.lang.PartyNodes;
+import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 /**
- * Command to accept a party invitation
+ * Command to display party information
  */
-public class CmdLeave implements IFunction {
+public class CmdInfo implements IFunction {
 
     /**
      * Executes the command
@@ -33,11 +38,21 @@ public class CmdLeave implements IFunction {
         // Check the sender's party status
         Party party = parties.getParty(player);
         if (party != null && party.isMember(player)) {
-            party.sendMessages(parties.getMessage(PartyNodes.PLAYER_LEFT, true, Filter.PLAYER.setReplacement(player.getName())));
-            party.removeMember(player);
-            if (party.isEmpty()) {
-                parties.removeParty(party);
+            StringBuilder members = new StringBuilder();
+            for (String member : party.getMembers()) {
+                members.append(ChatColor.GOLD);
+                members.append(new VersionPlayer(member).getName());
+                members.append(ChatColor.GRAY);
+                members.append(", ");
             }
+            parties.sendMessage(
+                    player,
+                    IndividualNodes.INFO,
+                    new CustomFilter("{leader}", party.getLeader().getName()),
+                    new CustomFilter("{members}", members.substring(0, members.length() - 4)),
+                    new CustomFilter("{size}", members.length() + ""),
+                    new CustomFilter("{break}", TextSizer.createLine("", "-", ChatColor.DARK_GRAY))
+            );
         }
 
         else parties.sendMessage(player, ErrorNodes.NO_PARTY);
