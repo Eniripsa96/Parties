@@ -1,21 +1,29 @@
 package com.sucy.party;
 
+import com.rit.sucy.config.Filter;
+import com.rit.sucy.version.VersionPlayer;
+import com.sucy.party.lang.IndividualNodes;
+import com.sucy.party.lang.PartyNodes;
+import com.sucy.party.mccore.PartyBoardManager;
 import com.sucy.skill.api.PlayerSkills;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import javax.persistence.Version;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Data for a party
  */
 public class Party {
 
-    private ArrayList<String> members = new ArrayList<String>();
-    private HashMap<String, Long> invitations = new HashMap<String, Long>();
+    private ArrayList<VersionPlayer> members = new ArrayList<VersionPlayer>();
+    private HashMap<VersionPlayer, Long> invitations = new HashMap<VersionPlayer, Long>();
     private Parties plugin;
-    private String partyLeader;
+    private VersionPlayer partyLeader;
 
     /**
      * Constructor
@@ -25,7 +33,7 @@ public class Party {
      */
     public Party(Parties plugin, Player leader) {
         this.plugin = plugin;
-        this.partyLeader = leader.getName();
+        this.partyLeader = new VersionPlayer(leader);
         members.add(partyLeader);
     }
 
@@ -49,14 +57,14 @@ public class Party {
      * Clears all expired invitations from the map
      */
     public void checkInvitations() {
-        String[] names = invitations.keySet().toArray(new String[invitations.size()]);
-        for (String name : names) {
-            if (invitations.get(name) < System.currentTimeMillis()) {
-                invitations.remove(name);
-                sendMessage(ChatColor.GOLD + name + ChatColor.DARK_GREEN + " didn't respond to the party invitation");
-                Player player = plugin.getServer().getPlayer(name);
+        VersionPlayer[] players = invitations.keySet().toArray(new VersionPlayer[invitations.size()]);
+        for (VersionPlayer vp : players) {
+            if (invitations.get(vp) < System.currentTimeMillis()) {
+                invitations.remove(vp);
+                Player player = vp.getPlayer();
                 if (player != null) {
-                    player.sendMessage(ChatColor.DARK_GREEN + "You didn't respond to the party invitation");
+                    sendMessages(plugin.getMessage(PartyNodes.NO_RESPONSE, true, Filter.PLAYER.setReplacement(player.getName())));
+                    plugin.sendMessage(player, IndividualNodes.NO_RESPONSE);
                 }
             }
         }
@@ -72,7 +80,7 @@ public class Party {
     /**
      * @return list of names of the members in the party
      */
-    public ArrayList<String> getMembers() {
+    public ArrayList<VersionPlayer> getMembers() {
         return members;
     }
 
@@ -81,8 +89,8 @@ public class Party {
      */
     public int getOnlinePartySize() {
         int counter = 0;
-        for (String member : members) {
-            if (plugin.getServer().getPlayer(member) != null) counter++;
+        for (VersionPlayer member : members) {
+            if (member.getPlayer() != null) counter++;
         }
         return counter;
     }
@@ -94,7 +102,7 @@ public class Party {
      * @return       true if on the team, false otherwise
      */
     public boolean isMember(Player player) {
-        return members.contains(player.getName());
+        return members.contains(new VersionPlayer(player));
     }
 
     /**
@@ -105,7 +113,7 @@ public class Party {
      */
     public boolean isInvited(Player player) {
         checkInvitations();
-        return invitations.containsKey(player.getName());
+        return invitations.containsKey(new VersionPlayer(player));
     }
 
     /**
@@ -115,7 +123,7 @@ public class Party {
      * @return       true if they're the leader, false otherwise
      */
     public boolean isLeader(Player player) {
-        return partyLeader.equals(player.getName());
+        return partyLeader.equals(new VersionPlayer(player));
     }
 
     /**
@@ -124,8 +132,9 @@ public class Party {
      * @param player player to add
      */
     public void invite(Player player) {
-        if (!members.contains(player.getName()) && !invitations.containsKey(player.getName())) {
-            invitations.put(player.getName(), System.currentTimeMillis() + plugin.getInviteTimeout());
+        VersionPlayer vp = new VersionPlayer(player);
+        if (!members.contains(vp) && !invitations.containsKey(vp)) {
+            invitations.put(vp, System.currentTimeMillis() + plugin.getInviteTimeout());
         }
     }
 
@@ -135,9 +144,10 @@ public class Party {
      * @param player player to accept
      */
     public void accept(Player player) {
-        if (invitations.containsKey(player.getName())) {
-            invitations.remove(player.getName());
-            members.add(player.getName());
+        VersionPlayer vp = new VersionPlayer(player);
+        if (invitations.containsKey(vp)) {
+            invitations.remove(vp);
+            members.add(vp);
         }
     }
 
@@ -145,8 +155,9 @@ public class Party {
      * @param player player to decline
      */
     public void decline(Player player) {
-        if (invitations.containsKey(player.getName())) {
-            invitations.remove(player.getName());
+        VersionPlayer vp = new VersionPlayer(player);
+        if (invitations.containsKey(vp)) {
+            invitations.remove(vp);
         }
     }
 
@@ -156,8 +167,9 @@ public class Party {
      * @param player player to remove
      */
     public void removeMember(Player player) {
-        if (members.contains(player.getName())) {
-            members.remove(player.getName());
+        VersionPlayer vp = new VersionPlayer(player);
+        if (members.contains(vp)) {
+            members.remove(vp);
         }
         if (isLeader(player) && members.size() > 0) {
             partyLeader = members.get(0);
@@ -168,10 +180,22 @@ public class Party {
      * Changes the leader of the party
      */
     public void changeLeader() {
-        for (String member : members) {
-            if (plugin.getServer().getPlayer(member) != null) {
+        for (VersionPlayer member : members) {
+            if (member.getPlayer() != null) {
                 partyLeader = member;
-                plugin.getServer().getPlayer(member).sendMessage(ChatColor.DARK_GREEN + "You are now the leader of your party");
+                sendMessages(plugin.getMessage(PartyNodes.NEW_LEADER, true, Filter.PLAYER.setReplacement(member.getName())));
+            }
+        }
+    }
+
+    /**
+     * Removes scoreboards for the party
+     */
+    public void removeBoards() {
+        for (VersionPlayer member : members) {
+            Player player = member.getPlayer();
+            if (player != null) {
+                PartyBoardManager.clearBoard(plugin, player);
             }
         }
     }
@@ -192,10 +216,10 @@ public class Party {
         int level = plugin.getSkillAPI().getPlayer(source.getName()).getLevel();
 
         // Grant exp to all members
-        for (String member : members) {
+        for (VersionPlayer member : members) {
 
             // Player must be online
-            Player player = plugin.getServer().getPlayer(member);
+            Player player = member.getPlayer();
             if (player != null) {
                 PlayerSkills data = plugin.getSkillAPI().getPlayer(member);
                 int exp = (int)Math.ceil(baseAmount);
@@ -207,10 +231,35 @@ public class Party {
                 }
 
                 data.giveExp(exp);
+            }
+        }
+    }
 
-                // Display message if enabled
-                if (plugin.isDisplayingMessages()) {
-                    player.sendMessage(ChatColor.DARK_GREEN + "You gained " + ChatColor.GOLD + exp + " experience");
+    /**
+     * Sends a message to the party
+     *
+     * @param message message to send
+     */
+    public void sendMessage(String message) {
+        for (VersionPlayer member : members) {
+            Player player = member.getPlayer();
+            if (player != null) {
+                player.sendMessage(message);
+            }
+        }
+    }
+
+    /**
+     * Sends a list of messages to the party
+     *
+     * @param messages messages to send
+     */
+    public void sendMessages(List<String> messages) {
+        for (VersionPlayer member : members) {
+            Player player = member.getPlayer();
+            if (player != null) {
+                for (String message : messages) {
+                    player.sendMessage(message);
                 }
             }
         }
@@ -219,14 +268,37 @@ public class Party {
     /**
      * Sends a message to all members in the party
      *
-     * @param message message to send
+     * @param sender  the player who sent a party message
+     * @param message message the player typed
      */
-    public void sendMessage(String message) {
-        for (String member : members) {
-            Player player = plugin.getServer().getPlayer(member);
+    public void sendMessage(Player sender, String message) {
+        List<String> messages = plugin.getMessage(PartyNodes.CHAT_MESSAGE, true, Filter.PLAYER.setReplacement(sender.getName()), Filter.MESSAGE.setReplacement(message));
+        for (VersionPlayer member : members) {
+            Player player = member.getPlayer();
             if (player != null) {
-                player.sendMessage(message);
+                for (String line : messages) {
+                    player.sendMessage(line);
+                }
             }
+        }
+    }
+
+    /**
+     * Clears the party scoreboard for the player
+     *
+     * @param player player to clear for
+     */
+    public void clearBoard(Player player) {
+        PartyBoardManager.clearBoard(plugin, player);
+        if (isEmpty()) {
+            removeBoards();
+        }
+    }
+
+    public void updateBoards() {
+        removeBoards();
+        for (VersionPlayer member : members) {
+            PartyBoardManager.applyBoard(plugin, member.getPlayer());
         }
     }
 }

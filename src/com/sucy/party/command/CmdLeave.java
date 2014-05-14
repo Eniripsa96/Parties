@@ -1,11 +1,14 @@
 package com.sucy.party.command;
 
+import com.rit.sucy.commands.ConfigurableCommand;
+import com.rit.sucy.commands.IFunction;
+import com.rit.sucy.config.Filter;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
 import com.sucy.party.PermissionNode;
-import com.sucy.skill.command.CommandHandler;
-import com.sucy.skill.command.ICommand;
-import com.sucy.skill.command.SenderType;
+import com.sucy.party.lang.CommandNodes;
+import com.sucy.party.lang.ErrorNodes;
+import com.sucy.party.lang.PartyNodes;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -14,18 +17,18 @@ import org.bukkit.plugin.Plugin;
 /**
  * Command to accept a party invitation
  */
-public class CmdLeave implements ICommand {
+public class CmdLeave implements IFunction {
 
     /**
      * Executes the command
      *
-     * @param handler handler for the commands
+     * @param command owning command
      * @param plugin  plugin reference
      * @param sender  sender of the command
      * @param args    arguments provided
      */
     @Override
-    public void execute(CommandHandler handler, Plugin plugin, CommandSender sender, String[] args) {
+    public void execute(ConfigurableCommand command, Plugin plugin, CommandSender sender, String[] args) {
 
         Parties parties = (Parties)plugin;
         Player player = (Player)sender;
@@ -33,44 +36,13 @@ public class CmdLeave implements ICommand {
         // Check the sender's party status
         Party party = parties.getParty(player);
         if (party != null && party.isMember(player)) {
-            party.sendMessage(ChatColor.GOLD + player.getName() + ChatColor.DARK_GREEN + " has left the party");
+            party.sendMessages(parties.getMessage(PartyNodes.PLAYER_LEFT, true, Filter.PLAYER.setReplacement(player.getName())));
             party.removeMember(player);
+            if (party.isEmpty()) {
+                parties.removeParty(party);
+            }
         }
 
-        else player.sendMessage(ChatColor.DARK_RED + "You are not a member of a party");
-    }
-
-    /**
-     * @return permission required to use the command
-     */
-    @Override
-    public String getPermissionNode() {
-        return PermissionNode.GENERAL;
-    }
-
-    /**
-     * @param plugin plugin reference
-     * @return       arguments used by the command
-     */
-    @Override
-    public String getArgsString(Plugin plugin) {
-        return "";
-    }
-
-    /**
-     * @param plugin plugin reference
-     * @return       a description for the command
-     */
-    @Override
-    public String getDescription(Plugin plugin) {
-        return "Leaves a party";
-    }
-
-    /**
-     * @return type of sender required by the command
-     */
-    @Override
-    public SenderType getSenderType() {
-        return SenderType.PLAYER_ONLY;
+        else parties.sendMessage(player, ErrorNodes.NO_PARTY);
     }
 }

@@ -7,6 +7,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -65,6 +66,24 @@ public class PartyListener implements Listener {
     }
 
     /**
+     * Handles party chat toggles
+     *
+     * @param event event details
+     */
+    @EventHandler
+    public void onChat(AsyncPlayerChatEvent event) {
+        if (plugin.isToggled(event.getPlayer().getName())) {
+            Party party = plugin.getParty(event.getPlayer());
+            if (party == null || party.isEmpty()) {
+                plugin.toggle(event.getPlayer().getName());
+                return;
+            }
+            event.setCancelled(true);
+            plugin.getParty(event.getPlayer()).sendMessage(event.getPlayer(), event.getMessage());
+        }
+    }
+
+    /**
      * Share experience between members
      *
      * @param event event details
@@ -88,7 +107,8 @@ public class PartyListener implements Listener {
      */
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        if (plugin.isUsingScoreboard()) {
+        Party party = plugin.getParty(event.getPlayer());
+        if (plugin.isUsingScoreboard() && party != null && !party.isEmpty()) {
             PartyBoardManager.applyBoard(plugin, event.getPlayer());
         }
     }

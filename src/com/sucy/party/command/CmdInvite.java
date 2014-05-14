@@ -1,45 +1,56 @@
 package com.sucy.party.command;
 
+import com.rit.sucy.commands.CommandManager;
+import com.rit.sucy.commands.ConfigurableCommand;
+import com.rit.sucy.commands.IFunction;
+import com.rit.sucy.config.Filter;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
-import com.sucy.party.PermissionNode;
-import com.sucy.skill.command.CommandHandler;
-import com.sucy.skill.command.ICommand;
-import com.sucy.skill.command.SenderType;
-import org.bukkit.ChatColor;
+import com.sucy.party.lang.ErrorNodes;
+import com.sucy.party.lang.IndividualNodes;
+import com.sucy.party.lang.PartyNodes;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.util.UUID;
+
 /**
  * Command to invite other players to a party
  */
-public class CmdInvite implements ICommand {
+public class CmdInvite implements IFunction {
 
     /**
      * Executes the command
      *
-     * @param handler handler for the commands
+     * @param command owning command
      * @param plugin  plugin reference
      * @param sender  sender of the command
      * @param args    arguments provided
      */
     @Override
-    public void execute(CommandHandler handler, Plugin plugin, CommandSender sender, String[] args) {
+    public void execute(ConfigurableCommand command, Plugin plugin, CommandSender sender, String[] args) {
 
         Parties parties = (Parties)plugin;
         Player player = (Player)sender;
 
         // Requires at least one argument
         if (args.length == 0) {
-            handler.displayUsage(sender);
+            command.displayHelp(sender, 1);
+            return;
+        }
+
+        // Cannot be yourself
+        if (args[0].equalsIgnoreCase(player.getName())) {
+            parties.sendMessage(player, ErrorNodes.NO_INVITE_SELF);
             return;
         }
 
         // Validate the player
-        Player target = plugin.getServer().getPlayer(args[0]);
+        UUID id = parties.getSkillAPI().getPlayerUUID(args[0]);
+        Player target = id == null ? null : plugin.getServer().getPlayer(id);
         if (target == null) {
-            sender.sendMessage(ChatColor.DARK_RED + "That player is not online");
+            parties.sendMessage(player, ErrorNodes.NOT_ONLINE);
             return;
         }
 
@@ -49,13 +60,13 @@ public class CmdInvite implements ICommand {
 
             // Party is full
             if (party.isFull()) {
-                player.sendMessage(ChatColor.DARK_RED + "Your party is currently full");
+                parties.sendMessage(player, ErrorNodes.PARTY_FULL);
                 return;
             }
 
             // Doesn't have permission
             if (((Parties) plugin).isLeaderInviteOnly() && !party.isLeader(player)) {
-                player.sendMessage(ChatColor.DARK_RED + "You aren't the leader of the party");
+                parties.sendMessage(player, ErrorNodes.NOT_LEADER);
                 return;
             }
         }
@@ -63,7 +74,7 @@ public class CmdInvite implements ICommand {
         // Check the target's party status
         Party targetParty = parties.getParty(target);
         if (targetParty != null && !targetParty.isEmpty()) {
-            player.sendMessage(ChatColor.DARK_RED + "That player is already in another party");
+            parties.sendMessage(player, ErrorNodes.IN_OTHER_PARTY);
             return;
         }
 
@@ -80,42 +91,7 @@ public class CmdInvite implements ICommand {
 
         // Invite the target
         party.invite(target);
-        party.sendMessage(ChatColor.GOLD + target.getName() + ChatColor.DARK_GREEN + " has been invited to join the party");
-        target.sendMessage(ChatColor.DARK_GREEN + "You have been invited to join " + ChatColor.GOLD + player.getName() + "'s " + ChatColor.DARK_GREEN + "party");
-        target.sendMessage(ChatColor.DARK_GREEN + "Type " + ChatColor.GOLD + "/pt accept" + ChatColor.DARK_GREEN + " to join or " + ChatColor.GOLD + "/pt decline " + ChatColor.DARK_GREEN + "to decline");
-    }
-
-    /**
-     * @return permission required to use the command
-     */
-    @Override
-    public String getPermissionNode() {
-        return PermissionNode.GENERAL;
-    }
-
-    /**
-     * @param plugin plugin reference
-     * @return       arguments used by the command
-     */
-    @Override
-    public String getArgsString(Plugin plugin) {
-        return "<player>";
-    }
-
-    /**
-     * @param plugin plugin reference
-     * @return       a description for the command
-     */
-    @Override
-    public String getDescription(Plugin plugin) {
-        return "Invites a player to a party";
-    }
-
-    /**
-     * @return type of sender required by the command
-     */
-    @Override
-    public SenderType getSenderType() {
-        return SenderType.PLAYER_ONLY;
+        party.sendMessages(parties.getMessage(PartyNodes.PLAYER_INVITED, true, Filter.PLAYER.setReplacement(target.getName())));
+        parties.sendMessage(target, IndividualNodes.INVITED, Filter.PLAYER.setReplacement(player.getName()));
     }
 }

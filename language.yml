@@ -1,0 +1,26 @@
+Party:
+    player-joined: '&6{player} &2has joined the party'
+    player-declined: '&6{player} &2has declined the party invitation'
+    player-invited: '&6{player} &2was invited to join the party'
+    player-left: '&6{player} &2has left the party'
+    no-response: '&6{player} &4did not respond to the invitation'
+    chat-message: '&b<{player}> {message}'
+    new-leader: '&6{player} &2is now the party leader'
+
+Individual:
+    chat-on: '&2Party chat has been toggled on'
+    chat-off: '&2Party chat has been toggled off'
+    declined: '&2You have declined the party invitation'
+    no-response: '&4You did not respond to the invitation'
+    invited:
+    - '&2You have been invited to join &6{player}s &2party'
+    - '&2Type &6/pt join &2to join or &6/pt decline &2to decline'
+
+Errors:
+    no-invite-self: '&4You cannot invite yourself'
+    no-invites: '&4You have no pending invitations'
+    no-party: '&4You are not a member of a party'
+    not-online: '&4That player is not online'
+    not-leader: '&4You are not the party leader'
+    in-other-party: '&4That player is already in another party'
+    party-full: '&4Your party is already full'

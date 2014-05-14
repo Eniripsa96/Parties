@@ -1,30 +1,28 @@
 package com.sucy.party.command;
 
+import com.rit.sucy.commands.CommandManager;
 import com.rit.sucy.commands.ConfigurableCommand;
-import com.rit.sucy.commands.ICommand;
 import com.rit.sucy.commands.IFunction;
-import com.rit.sucy.config.Filter;
+import com.rit.sucy.config.Config;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
 import com.sucy.party.PermissionNode;
 import com.sucy.party.lang.CommandNodes;
 import com.sucy.party.lang.ErrorNodes;
-import com.sucy.party.lang.IndividualNodes;
-import com.sucy.party.lang.PartyNodes;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 /**
- * Command to accept a party invitation
+ * Command to invite other players to a party
  */
-public class CmdDecline implements IFunction {
+public class CmdMsg implements IFunction {
 
     /**
      * Executes the command
      *
-     * @param command owning command
+     * @param command handler for the commands
      * @param plugin  plugin reference
      * @param sender  sender of the command
      * @param args    arguments provided
@@ -35,14 +33,23 @@ public class CmdDecline implements IFunction {
         Parties parties = (Parties)plugin;
         Player player = (Player)sender;
 
-        // Check the sender's party status
-        Party party = parties.getParty(player);
-        if (party != null && party.isInvited(player)) {
-            party.decline(player);
-            party.sendMessages(parties.getMessage(PartyNodes.PLAYER_DECLINED, true, Filter.PLAYER.setReplacement(player.getName())));
-            parties.sendMessage(player, IndividualNodes.DECLINED);
+        // Requires at least one argument
+        if (args.length == 0) {
+            command.displayHelp(sender, 1);
+            return;
         }
 
-        else parties.sendMessage(player, ErrorNodes.NO_INVITES);
+        // Check the sender's party status
+        Party party = parties.getParty(player);
+        if (party != null && !party.isEmpty()) {
+            String text = args[0];
+            for (int i = 1; i < args.length; i++) {
+                text += " " + args[i];
+            }
+            party.sendMessage(player, text);
+        }
+
+        // Not in a party
+        else parties.sendMessage(player, ErrorNodes.NO_PARTY);
     }
 }

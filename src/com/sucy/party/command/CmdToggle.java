@@ -1,25 +1,22 @@
 package com.sucy.party.command;
 
 import com.rit.sucy.commands.ConfigurableCommand;
-import com.rit.sucy.commands.ICommand;
 import com.rit.sucy.commands.IFunction;
-import com.rit.sucy.config.Filter;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
 import com.sucy.party.PermissionNode;
 import com.sucy.party.lang.CommandNodes;
 import com.sucy.party.lang.ErrorNodes;
 import com.sucy.party.lang.IndividualNodes;
-import com.sucy.party.lang.PartyNodes;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 /**
- * Command to accept a party invitation
+ * Command to toggle party chat
  */
-public class CmdDecline implements IFunction {
+public class CmdToggle implements IFunction {
 
     /**
      * Executes the command
@@ -37,12 +34,16 @@ public class CmdDecline implements IFunction {
 
         // Check the sender's party status
         Party party = parties.getParty(player);
-        if (party != null && party.isInvited(player)) {
-            party.decline(player);
-            party.sendMessages(parties.getMessage(PartyNodes.PLAYER_DECLINED, true, Filter.PLAYER.setReplacement(player.getName())));
-            parties.sendMessage(player, IndividualNodes.DECLINED);
+        if (party != null && !party.isEmpty()) {
+
+            parties.toggle(player.getName());
+            if (parties.isToggled(player.getName())) {
+                parties.sendMessage(player, IndividualNodes.CHAT_ON);
+            }
+            else parties.sendMessage(player, IndividualNodes.CHAT_OFF);
         }
 
-        else parties.sendMessage(player, ErrorNodes.NO_INVITES);
+        // Not in a party
+        else parties.sendMessage(player, ErrorNodes.NO_PARTY);
     }
 }

@@ -1,12 +1,14 @@
 package com.sucy.party.mccore;
 
 import com.rit.sucy.scoreboard.StatHolder;
+import com.rit.sucy.version.VersionPlayer;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import sun.net.www.content.text.plain;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * Stat holder for a party scoreboard
@@ -14,7 +16,7 @@ import java.util.Map;
 public class PartyStats implements StatHolder {
 
     private final Parties plugin;
-    private final String  player;
+    private final Player  player;
 
     /**
      * Constructor
@@ -22,7 +24,7 @@ public class PartyStats implements StatHolder {
      * @param plugin plugin reference
      * @param player player name
      */
-    public PartyStats(Parties plugin, String player) {
+    public PartyStats(Parties plugin, Player player) {
         this.plugin = plugin;
         this.player = player;
     }
@@ -31,17 +33,34 @@ public class PartyStats implements StatHolder {
      * @return stats map for a MCCore StatsScoreboard
      */
     @Override
-    public Map<String, Integer> getStats() {
-        HashMap<String, Integer> map = new HashMap<String, Integer>();
-        Player p = plugin.getServer().getPlayer(player);
-        if (p != null) {
-            Party pt = plugin.getParty(p);
+    public ArrayList<OfflinePlayer> getStats() {
+        ArrayList<OfflinePlayer> stats = new ArrayList<OfflinePlayer>();
+        if (player.isOnline()) {
+            Party pt = plugin.getParty(player);
             if (pt != null && !pt.isEmpty()) {
-                for (String member : pt.getMembers()) {
-                    map.put(member, plugin.getSkillAPI().getPlayer(member).getLevel());
+                for (VersionPlayer member : pt.getMembers()) {
+                    Player m = member.getPlayer();
+                    if (m != null) {
+                        stats.add(m);
+                    }
+                    else stats.add(player);
                 }
             }
         }
-        return map;
+        return stats;
+    }
+
+    @Override
+    public ArrayList<Integer> getValues() {
+        ArrayList<Integer> stats = new ArrayList<Integer>();
+        if (player.isOnline()) {
+            Party pt = plugin.getParty(player);
+            if (pt != null && !pt.isEmpty()) {
+                for (VersionPlayer member : pt.getMembers()) {
+                    stats.add(plugin.getSkillAPI().getPlayer(member).getLevel());
+                }
+            }
+        }
+        return stats;
     }
 }

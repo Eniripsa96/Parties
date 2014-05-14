@@ -1,14 +1,22 @@
 package com.sucy.party;
 
-import com.sucy.party.command.PartyCommander;
+import com.rit.sucy.commands.CommandManager;
+import com.rit.sucy.commands.ConfigurableCommand;
+import com.rit.sucy.commands.SenderType;
+import com.rit.sucy.config.Config;
+import com.rit.sucy.config.CustomFilter;
+import com.rit.sucy.config.FilterType;
+import com.rit.sucy.config.LanguageConfig;
+import com.rit.sucy.text.TextFormatter;
+import com.sucy.party.command.*;
 import com.sucy.party.mccore.PartyBoardManager;
 import com.sucy.skill.SkillAPI;
-import com.sucy.skill.mccore.CoreChecker;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Add-on plugin for SkillAPI allowing parties with shared experience
@@ -16,6 +24,8 @@ import java.util.ArrayList;
 public class Parties extends JavaPlugin {
 
     private ArrayList<Party> parties = new ArrayList<Party>();
+    private ArrayList<String> toggled = new ArrayList<String>();
+    private LanguageConfig language;
     private SkillAPI skillAPI;
     private UpdateTask task;
     private boolean removeOnDc;
@@ -37,6 +47,11 @@ public class Parties extends JavaPlugin {
         task = new UpdateTask(this);
 
         saveDefaultConfig();
+        Config.trim(getConfig());
+        Config.setDefaults(getConfig());
+        saveConfig();
+        language = new LanguageConfig(this, "language");
+
         removeOnDc = getConfig().getBoolean("remove-on-dc");
         newLeaderOnDc = getConfig().getBoolean("new-leader-on-dc");
         displayMessage = getConfig().getBoolean("display-message");
@@ -48,7 +63,18 @@ public class Parties extends JavaPlugin {
         maxSize = getConfig().getInt("max-size");
 
         new PartyListener(this);
-        new PartyCommander(this);
+
+        // Set up commands
+        ConfigurableCommand root = new ConfigurableCommand(this, "pt", SenderType.ANYONE);
+        root.addSubCommands(
+                new ConfigurableCommand(this, "accept", SenderType.PLAYER_ONLY, new CmdAccept(), "Accepts a party request", "", PermissionNode.GENERAL),
+                new ConfigurableCommand(this, "decline", SenderType.PLAYER_ONLY, new CmdDecline(), "Declines a party request", "", PermissionNode.GENERAL),
+                new ConfigurableCommand(this, "invite", SenderType.PLAYER_ONLY, new CmdInvite(), "Invites a player to a party", "<player>", PermissionNode.GENERAL),
+                new ConfigurableCommand(this, "leave", SenderType.PLAYER_ONLY, new CmdLeave(), "Leaves your party", "", PermissionNode.GENERAL),
+                new ConfigurableCommand(this, "message", SenderType.PLAYER_ONLY, new CmdMsg(), "Sends a message to your party", "<message>", PermissionNode.GENERAL),
+                new ConfigurableCommand(this, "toggle", SenderType.PLAYER_ONLY, new CmdToggle(), "Toggles party chat on/off", "", PermissionNode.GENERAL)
+        );
+        CommandManager.registerCommand(root);
     }
 
     /**
@@ -104,7 +130,7 @@ public class Parties extends JavaPlugin {
      * @return whether or not scoreboards are being used
      */
     public boolean isUsingScoreboard() {
-        return useScoreboard && CoreChecker.isCoreActive();
+        return useScoreboard;
     }
 
     /**
@@ -175,5 +201,55 @@ public class Parties extends JavaPlugin {
         for (Party party : parties) {
             party.checkInvitations();
         }
+    }
+
+    /**
+     * Checks if the player is toggled
+     *
+     * @param playerName name of the player to check
+     * @return           true if toggled, false otherwise
+     */
+    public boolean isToggled(String playerName) {
+        return toggled.contains(playerName.toLowerCase());
+    }
+
+    /**
+     * Toggles the player's party chat
+     *
+     * @param playerName name of player to toggle
+     */
+    public void toggle(String playerName) {
+        if (isToggled(playerName)) {
+            toggled.remove(playerName.toLowerCase());
+        }
+        else toggled.add(playerName.toLowerCase());
+    }
+
+    /**
+     * <p>Gets the message at the given key in the language configuration.</p>
+     *
+     * <p>Colors are applied and the message returned contains a list of all
+     * lines from the configuration. If it was just a single value, there will
+     * be only one element. If it was a string list, it will contain each line.</p>
+     *
+     * @param key     language key
+     * @param player  whether or not the message is for a player
+     * @param filters filters to apply
+     * @return        list of message lines
+     */
+    public List<String> getMessage(String key, boolean player, CustomFilter ... filters) {
+        return language.getMessage(key, player, FilterType.COLOR, filters);
+    }
+
+    /**
+     * <p>Sends a message to the target based on the message at the given
+     * language key.</p>
+     *
+     * @param target  recipient of the message
+     * @param key     message key
+     * @param filters filters to use
+     */
+    public void sendMessage(Player target, String key, CustomFilter ... filters) {
+        language.sendMessage(key, target, FilterType.COLOR, filters);
     }
 }

@@ -19,10 +19,20 @@ public class PartyBoardManager {
      */
     public static void applyBoard(Parties plugin, Player player) {
         StatBoard board = new StatBoard("Party", plugin.getName());
-        board.addStats(new PartyStats(plugin, player.getName()));
+        board.addStats(new PartyStats(plugin, player));
         PlayerBoards boards = BoardManager.getPlayerBoards(player.getName());
         boards.removeBoards(plugin.getName());
         boards.addBoard(board);
+    }
+
+    /**
+     * Removes boards for this plugin on empty party
+     *
+     * @param plugin plugin reference
+     * @param player player to remove for
+     */
+    public static void clearBoard(Parties plugin, Player player) {
+        BoardManager.getPlayerBoards(player.getName()).removeBoards(plugin.getName());
     }
 
     /**

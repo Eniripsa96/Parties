@@ -17,10 +17,6 @@ new-leader-on-dc: true
 # displaying party information
 use-scoreboard: false
 
-# Whether or not to display messages when
-# experience is gained
-display-exp-message: true
-
 # Whether or not only the leader of a party
 # can invite new members
 only-leader-invites: true
