@@ -3,7 +3,7 @@ package com.sucy.party;
 import org.bukkit.scheduler.BukkitRunnable;
 
 /**
- * Update task for parties
+ * Update task for partiestttttt
  */
 public class UpdateTask extends BukkitRunnable {
 

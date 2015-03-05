@@ -33,7 +33,6 @@ public class CmdAccept implements IFunction {
 
         // Check the sender's party status
         Party party = parties.getParty(player);
-        Bukkit.getLogger().info(party + (party != null ? " Invited? " + party.isInvited(player) : ""));
         if (party != null && party.isInvited(player)) {
             party.accept(player);
 

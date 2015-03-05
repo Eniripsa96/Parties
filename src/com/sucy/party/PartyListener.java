@@ -95,7 +95,7 @@ public class PartyListener implements Listener {
         if (party != null) {
             event.setCancelled(true);
             shared = true;
-            party.giveExp(event.getPlayerData().getPlayer(), event.getExp());
+            party.giveExp(event.getPlayerData().getPlayer(), event.getExp(), event.getSource());
             shared = false;
         }
     }

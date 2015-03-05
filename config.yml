@@ -17,6 +17,10 @@ new-leader-on-dc: true
 # displaying party information
 use-scoreboard: false
 
+# Whether or not to show levels in the scoreboard
+# A value of "false" will show health instead
+level-scoreboard: true
+
 # Whether or not only the leader of a party
 # can invite new members
 only-leader-invites: true

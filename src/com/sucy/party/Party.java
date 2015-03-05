@@ -1,19 +1,20 @@
 package com.sucy.party;
 
 import com.rit.sucy.config.Filter;
+import com.rit.sucy.version.VersionManager;
 import com.rit.sucy.version.VersionPlayer;
 import com.sucy.party.lang.IndividualNodes;
 import com.sucy.party.lang.PartyNodes;
 import com.sucy.party.mccore.PartyBoardManager;
-import com.sucy.skill.api.PlayerSkills;
-import org.bukkit.ChatColor;
+import com.sucy.skill.SkillAPI;
+import com.sucy.skill.api.enums.ExpSource;
+import com.sucy.skill.api.player.PlayerClass;
+import com.sucy.skill.api.player.PlayerData;
 import org.bukkit.entity.Player;
 
-import javax.persistence.Version;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Data for a party
@@ -158,6 +159,9 @@ public class Party {
             invitations.remove(vp.getIdString());
             members.add(vp.getIdString());
         }
+        if (plugin.isUsingScoreboard()) {
+            PartyBoardManager.applyBoard(plugin, player);
+        }
     }
 
     /**
@@ -182,6 +186,9 @@ public class Party {
         }
         if (isLeader(player) && members.size() > 0) {
             partyLeader = new VersionPlayer(members.get(0));
+        }
+        if (plugin.isUsingScoreboard()) {
+            PartyBoardManager.clearBoard(plugin, player);
         }
     }
 
@@ -212,34 +219,39 @@ public class Party {
     /**
      * Shares experience within the party
      *
-     * @param source player who caused the experience gain
-     * @param amount amount received
+     * @param source    player who caused the experience gain
+     * @param amount    amount received
+     * @param expSource the source type of the gained experience
      */
-    public void giveExp(Player source, int amount) {
+    public void giveExp(Player source, double amount, ExpSource expSource) {
         if (getOnlinePartySize() == 0) {
             return;
         }
 
         // Member modifier
         double baseAmount = amount / (1 + (getOnlinePartySize() - 1) * plugin.getMemberModifier());
-        int level = plugin.getSkillAPI().getPlayer(source.getName()).getLevel();
+        PlayerData data = SkillAPI.getPlayerData(source);
+        PlayerClass main = data.getMainClass();
+        int level = main == null ? 0 : main.getLevel();
 
         // Grant exp to all members
         for (String member : members) {
 
             // Player must be online
-            Player player = new VersionPlayer(member).getPlayer();
+            Player player = VersionManager.getPlayer(member);
             if (player != null) {
-                PlayerSkills data = plugin.getSkillAPI().getPlayer(member);
+                PlayerData info = SkillAPI.getPlayerData(player);
+                main = info.getMainClass();
+                int lvl = main == null ? 0 : main.getLevel();
                 int exp = (int)Math.ceil(baseAmount);
 
                 // Level modifier
                 if (plugin.getLevelModifier() > 0) {
-                    int dl = data.getLevel() - level;
+                    int dl = lvl - level;
                     exp = (int)Math.ceil(baseAmount * Math.pow(2, -plugin.getLevelModifier() * dl * dl));
                 }
 
-                data.giveExp(exp);
+                data.giveExp(exp, expSource);
             }
         }
     }
@@ -304,6 +316,9 @@ public class Party {
         }
     }
 
+    /**
+     * Updates all of the scoreboards for the party
+     */
     public void updateBoards() {
         removeBoards();
         for (String member : members) {

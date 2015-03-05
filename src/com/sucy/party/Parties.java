@@ -27,13 +27,12 @@ public class Parties extends JavaPlugin {
     private ArrayList<Party> parties = new ArrayList<Party>();
     private ArrayList<String> toggled = new ArrayList<String>();
     private LanguageConfig language;
-    private SkillAPI skillAPI;
     private UpdateTask task;
     private boolean removeOnDc;
     private boolean newLeaderOnDc;
-    private boolean displayMessage;
     private boolean leaderInviteOnly;
     private boolean useScoreboard;
+    private boolean levelScoreboard;
     private double memberModifier;
     private double levelModifier;
     private long inviteTimeout;
@@ -44,7 +43,6 @@ public class Parties extends JavaPlugin {
      */
     @Override
     public void onEnable() {
-        skillAPI = (SkillAPI)getServer().getPluginManager().getPlugin("SkillAPI");
         task = new UpdateTask(this);
 
         saveDefaultConfig();
@@ -55,9 +53,9 @@ public class Parties extends JavaPlugin {
 
         removeOnDc = getConfig().getBoolean("remove-on-dc");
         newLeaderOnDc = getConfig().getBoolean("new-leader-on-dc");
-        displayMessage = getConfig().getBoolean("display-message");
         leaderInviteOnly = getConfig().getBoolean("only-leader-invites");
         useScoreboard = getConfig().getBoolean("use-scoreboard");
+        levelScoreboard = getConfig().getBoolean("level-scoreboard");
         memberModifier = getConfig().getDouble("exp-modifications.members");
         levelModifier = getConfig().getDouble("exp-modifications.level");
         inviteTimeout = getConfig().getInt("invite-timeout") * 1000l;
@@ -90,14 +88,6 @@ public class Parties extends JavaPlugin {
         }
         HandlerList.unregisterAll(this);
         parties.clear();
-        skillAPI = null;
-    }
-
-    /**
-     * @return SkillAPI reference
-     */
-    public SkillAPI getSkillAPI() {
-        return skillAPI;
     }
 
     /**
@@ -115,13 +105,6 @@ public class Parties extends JavaPlugin {
     }
 
     /**
-     * @return whether or not to display a message when experience is gained
-     */
-    public boolean isDisplayingMessages() {
-        return displayMessage;
-    }
-
-    /**
      * @return whether or not only the leader can invite new party members
      */
     public boolean isLeaderInviteOnly() {
@@ -133,6 +116,14 @@ public class Parties extends JavaPlugin {
      */
     public boolean isUsingScoreboard() {
         return useScoreboard;
+    }
+
+    /**
+     * @return whether or not levels are shown in the scoreboard over health
+     */
+    public boolean isLevelScoreboard()
+    {
+        return levelScoreboard;
     }
 
     /**
@@ -171,7 +162,6 @@ public class Parties extends JavaPlugin {
      */
     public Party getParty(Player player) {
         for (Party party : parties) {
-            Bukkit.getLogger().info("Player: " + player.getName() + " Invited? " + party.isInvited(player) + " Member? " + party.isMember(player));
             if (party.isMember(player) || party.isInvited(player)) {
                 return party;
             }
