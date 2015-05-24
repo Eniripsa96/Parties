@@ -1,6 +1,6 @@
 name: Parties
 main: com.sucy.party.Parties
-version: 1.5
+version: 1.7
 author: Eniripsa96
 depend: [SkillAPI]
 

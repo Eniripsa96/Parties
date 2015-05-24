@@ -133,7 +133,7 @@ public class Party {
      * @return       true if they're the leader, false otherwise
      */
     public boolean isLeader(Player player) {
-        return partyLeader.equals(new VersionPlayer(player));
+        return partyLeader.getPlayer() == player;
     }
 
     /**
@@ -158,9 +158,10 @@ public class Party {
         if (invitations.containsKey(vp.getIdString())) {
             invitations.remove(vp.getIdString());
             members.add(vp.getIdString());
-        }
-        if (plugin.isUsingScoreboard()) {
-            PartyBoardManager.applyBoard(plugin, player);
+
+            if (plugin.isUsingScoreboard()) {
+                PartyBoardManager.applyBoard(plugin, player);
+            }
         }
     }
 
@@ -238,7 +239,7 @@ public class Party {
         for (String member : members) {
 
             // Player must be online
-            Player player = VersionManager.getPlayer(member);
+            Player player = new VersionPlayer(member).getPlayer();
             if (player != null) {
                 PlayerData info = SkillAPI.getPlayerData(player);
                 main = info.getMainClass();

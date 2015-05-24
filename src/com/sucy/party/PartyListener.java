@@ -2,9 +2,11 @@ package com.sucy.party;
 
 import com.sucy.party.mccore.PartyBoardManager;
 import com.sucy.skill.api.event.PlayerExperienceGainEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -88,15 +90,18 @@ public class PartyListener implements Listener {
      *
      * @param event event details
      */
-    @EventHandler
+    @EventHandler (priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onExpGain(PlayerExperienceGainEvent event) {
+        if (plugin.isDebug()) plugin.getLogger().info("Exp already being shared with " + event.getPlayerData().getPlayerName());
         if (shared) return;
         Party party = plugin.getParty(event.getPlayerData().getPlayer());
+        if (plugin.isDebug()) plugin.getLogger().info(event.getPlayerData().getPlayerName() + " has a party? " + (party != null));
         if (party != null) {
             event.setCancelled(true);
             shared = true;
             party.giveExp(event.getPlayerData().getPlayer(), event.getExp(), event.getSource());
             shared = false;
+            if (plugin.isDebug()) plugin.getLogger().info("Exp was shared!");
         }
     }
 

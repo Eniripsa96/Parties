@@ -33,6 +33,7 @@ public class Parties extends JavaPlugin {
     private boolean leaderInviteOnly;
     private boolean useScoreboard;
     private boolean levelScoreboard;
+    private boolean debug;
     private double memberModifier;
     private double levelModifier;
     private long inviteTimeout;
@@ -60,6 +61,7 @@ public class Parties extends JavaPlugin {
         levelModifier = getConfig().getDouble("exp-modifications.level");
         inviteTimeout = getConfig().getInt("invite-timeout") * 1000l;
         maxSize = getConfig().getInt("max-size");
+        debug = getConfig().getBoolean("debug-messages");
 
         new PartyListener(this);
 
@@ -152,6 +154,16 @@ public class Parties extends JavaPlugin {
      */
     public double getLevelModifier() {
         return levelModifier;
+    }
+
+    /**
+     * Whether or not debug messages are enabled
+     *
+     * @return true if enabled, false otherwise
+     */
+    public boolean isDebug()
+    {
+        return debug;
     }
 
     /**

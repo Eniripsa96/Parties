@@ -19,7 +19,7 @@ Individual:
     - '&8{break}'
     - '&2Leader: &6{leader}'
     - '&2Party Size: &6{size}'
-    - '&2Members: {members}'
+    - '&2Members: &6{members}'
     - '&8{break}'
 
 Errors:

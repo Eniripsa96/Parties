@@ -25,6 +25,9 @@ level-scoreboard: true
 # can invite new members
 only-leader-invites: true
 
+# Whether or not to show debug messages
+debug-messages: false
+
 # Modifications to experience gained
 exp-modifications:
 

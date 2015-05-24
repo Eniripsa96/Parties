@@ -40,9 +40,7 @@ public class CmdInfo implements IFunction {
         if (party != null && party.isMember(player)) {
             StringBuilder members = new StringBuilder();
             for (String member : party.getMembers()) {
-                members.append(ChatColor.GOLD);
                 members.append(new VersionPlayer(member).getName());
-                members.append(ChatColor.GRAY);
                 members.append(", ");
             }
             parties.sendMessage(
@@ -50,7 +48,7 @@ public class CmdInfo implements IFunction {
                     IndividualNodes.INFO,
                     new CustomFilter("{leader}", party.getLeader().getName()),
                     new CustomFilter("{members}", members.substring(0, members.length() - 4)),
-                    new CustomFilter("{size}", members.length() + ""),
+                    new CustomFilter("{size}", party.getPartySize() + ""),
                     new CustomFilter("{break}", TextSizer.createLine("", "-", ChatColor.DARK_GRAY))
             );
         }
