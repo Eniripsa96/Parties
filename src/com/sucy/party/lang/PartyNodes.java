@@ -24,5 +24,6 @@ public class PartyNodes {
     PLAYER_LEFT = BASE + "player-left",
     NO_RESPONSE = BASE + "no-response",
     CHAT_MESSAGE = BASE + "chat-message",
-    NEW_LEADER = BASE + "new-leader";
+    NEW_LEADER = BASE + "new-leader",
+    SCOREBOARD = BASE + "scoreboard-title";
 }

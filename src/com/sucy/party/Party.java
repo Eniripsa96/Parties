@@ -25,6 +25,7 @@ public class Party {
     private HashMap<String, Long> invitations = new HashMap<String, Long>();
     private Parties plugin;
     private VersionPlayer partyLeader;
+    private int nextId = -1;
 
     /**
      * Constructor
@@ -61,6 +62,36 @@ public class Party {
      */
     public VersionPlayer getLeader() {
         return partyLeader;
+    }
+
+    /**
+     * Gets the next member in a sequential order
+     *
+     * @return next player sequentially
+     */
+    public Player getSequentialPlayer() {
+        Player member;
+        do
+        {
+            nextId = (nextId + 1) % members.size();
+        }
+        while ((member = VersionManager.getPlayer(members.get(nextId))) == null);
+        return member;
+    }
+
+    /**
+     * Gets a random player in the party
+     *
+     * @return random player in the party
+     */
+    public Player getRandomPlayer() {
+        Player member;
+        do {
+            int id = (int)(Math.random() * members.size());
+            member = VersionManager.getPlayer(members.get(id));
+        }
+        while (member == null);
+        return member;
     }
 
     /**
@@ -252,7 +283,7 @@ public class Party {
                     exp = (int)Math.ceil(baseAmount * Math.pow(2, -plugin.getLevelModifier() * dl * dl));
                 }
 
-                data.giveExp(exp, expSource);
+                info.giveExp(exp, expSource);
             }
         }
     }

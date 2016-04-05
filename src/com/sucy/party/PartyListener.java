@@ -1,6 +1,7 @@
 package com.sucy.party;
 
 import com.sucy.party.mccore.PartyBoardManager;
+import com.sucy.skill.api.enums.ExpSource;
 import com.sucy.skill.api.event.PlayerExperienceGainEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -11,7 +12,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.inventory.ItemStack;
 
 /**
  * Listener for party mechanics
@@ -92,6 +95,7 @@ public class PartyListener implements Listener {
      */
     @EventHandler (priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onExpGain(PlayerExperienceGainEvent event) {
+        if (event.getSource() == ExpSource.COMMAND) return;
         if (plugin.isDebug()) plugin.getLogger().info("Exp already being shared with " + event.getPlayerData().getPlayerName());
         if (shared) return;
         Party party = plugin.getParty(event.getPlayerData().getPlayer());
@@ -149,6 +153,46 @@ public class PartyListener implements Listener {
             if (party.getOnlinePartySize() == 0) {
                 plugin.removeParty(party);
             }
+        }
+    }
+
+    /**
+     * Handles item distribution to a party
+     *
+     * @param event event details
+     */
+    @EventHandler
+    public void onPickup(PlayerPickupItemEvent event) {
+        Party party = plugin.getParty(event.getPlayer());
+        if (party != null)
+        {
+            ItemStack item = event.getItem().getItemStack();
+
+            String mode = plugin.getShareMode().toLowerCase();
+            if (mode.equals("sequential")) {
+                int count = item.getAmount();
+                item.setAmount(1);
+                for (int i = 0; i < count; i++) {
+                    party.getSequentialPlayer().getInventory().addItem(item);
+                }
+            }
+            else if (mode.equals("random")) {
+                int count = item.getAmount();
+                item.setAmount(1);
+                for (int i = 0; i < count; i++) {
+                    party.getRandomPlayer().getInventory().addItem(item);
+                }
+            }
+            else if (mode.equals("sequential-stack")) {
+                party.getSequentialPlayer().getInventory().addItem(item);
+            }
+            else if (mode.equals("random-stack")) {
+                party.getRandomPlayer().getInventory().addItem(item);
+            }
+            else return;
+
+            event.setCancelled(true);
+            event.getItem().remove();
         }
     }
 }

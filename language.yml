@@ -6,6 +6,7 @@ Party:
     no-response: '&6{player} &4did not respond to the invitation'
     chat-message: '&b<{player}> {message}'
     new-leader: '&6{player} &2is now the party leader'
+    scoreboard-title: 'Party'
 
 Individual:
     chat-on: '&2Party chat has been toggled on'

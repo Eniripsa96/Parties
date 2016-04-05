@@ -4,6 +4,7 @@ import com.rit.sucy.scoreboard.BoardManager;
 import com.rit.sucy.scoreboard.PlayerBoards;
 import com.rit.sucy.scoreboard.StatBoard;
 import com.sucy.party.Parties;
+import com.sucy.party.lang.PartyNodes;
 import org.bukkit.entity.Player;
 
 /**
@@ -18,7 +19,10 @@ public class PartyBoardManager {
      * @param player player to apply to
      */
     public static void applyBoard(Parties plugin, Player player) {
-        StatBoard board = new StatBoard("Party", plugin.getName());
+
+        String title = plugin.getMessage(PartyNodes.SCOREBOARD, false).get(0);
+
+        StatBoard board = new StatBoard(title, plugin.getName());
         board.addStats(new PartyStats(plugin, player, plugin.isLevelScoreboard()));
         PlayerBoards boards = BoardManager.getPlayerBoards(player.getName());
         boards.removeBoards(plugin.getName());

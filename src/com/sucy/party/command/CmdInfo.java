@@ -47,7 +47,7 @@ public class CmdInfo implements IFunction {
                     player,
                     IndividualNodes.INFO,
                     new CustomFilter("{leader}", party.getLeader().getName()),
-                    new CustomFilter("{members}", members.substring(0, members.length() - 4)),
+                    new CustomFilter("{members}", members.substring(0, members.length() - 2)),
                     new CustomFilter("{size}", party.getPartySize() + ""),
                     new CustomFilter("{break}", TextSizer.createLine("", "-", ChatColor.DARK_GRAY))
             );

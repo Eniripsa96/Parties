@@ -3,10 +3,8 @@ package com.sucy.party;
 import com.rit.sucy.commands.CommandManager;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.SenderType;
-import com.rit.sucy.config.Config;
-import com.rit.sucy.config.CustomFilter;
-import com.rit.sucy.config.FilterType;
-import com.rit.sucy.config.LanguageConfig;
+import com.rit.sucy.config.*;
+import com.rit.sucy.config.parse.DataSection;
 import com.rit.sucy.text.TextFormatter;
 import com.sucy.party.command.*;
 import com.sucy.party.mccore.PartyBoardManager;
@@ -16,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import javax.xml.stream.events.Comment;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +25,9 @@ public class Parties extends JavaPlugin {
 
     private ArrayList<Party> parties = new ArrayList<Party>();
     private ArrayList<String> toggled = new ArrayList<String>();
-    private LanguageConfig language;
+    private CommentedLanguageConfig language;
     private UpdateTask task;
+    private String sharing;
     private boolean removeOnDc;
     private boolean newLeaderOnDc;
     private boolean leaderInviteOnly;
@@ -46,22 +46,26 @@ public class Parties extends JavaPlugin {
     public void onEnable() {
         task = new UpdateTask(this);
 
-        saveDefaultConfig();
-        Config.trim(getConfig());
-        Config.setDefaults(getConfig());
-        saveConfig();
-        language = new LanguageConfig(this, "language");
+        CommentedConfig config = new CommentedConfig(this, "config");
+        config.saveDefaultConfig();
+        config.trim();
+        config.checkDefaults();
+        config.save();
+        DataSection settings = config.getConfig();
 
-        removeOnDc = getConfig().getBoolean("remove-on-dc");
-        newLeaderOnDc = getConfig().getBoolean("new-leader-on-dc");
-        leaderInviteOnly = getConfig().getBoolean("only-leader-invites");
-        useScoreboard = getConfig().getBoolean("use-scoreboard");
-        levelScoreboard = getConfig().getBoolean("level-scoreboard");
-        memberModifier = getConfig().getDouble("exp-modifications.members");
-        levelModifier = getConfig().getDouble("exp-modifications.level");
-        inviteTimeout = getConfig().getInt("invite-timeout") * 1000l;
-        maxSize = getConfig().getInt("max-size");
-        debug = getConfig().getBoolean("debug-messages");
+        language = new CommentedLanguageConfig(this, "language");
+
+        sharing = settings.getString("item-sharing");
+        removeOnDc = settings.getBoolean("remove-on-dc");
+        newLeaderOnDc = settings.getBoolean("new-leader-on-dc");
+        leaderInviteOnly = settings.getBoolean("only-leader-invites");
+        useScoreboard = settings.getBoolean("use-scoreboard");
+        levelScoreboard = settings.getBoolean("level-scoreboard");
+        memberModifier = settings.getDouble("exp-modifications.members");
+        levelModifier = settings.getDouble("exp-modifications.level");
+        inviteTimeout = settings.getInt("invite-timeout") * 1000l;
+        maxSize = settings.getInt("max-size");
+        debug = settings.getBoolean("debug-messages");
 
         new PartyListener(this);
 
@@ -90,6 +94,13 @@ public class Parties extends JavaPlugin {
         }
         HandlerList.unregisterAll(this);
         parties.clear();
+    }
+
+    /**
+     * @return retrieves the type of sharing being used
+     */
+    public String getShareMode() {
+        return sharing;
     }
 
     /**
