@@ -10,15 +10,6 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://D:/Programming/Minecraft/test/SkillAPI Test/plugins/MCCore.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
           <root url="jar://D:/Programming/Minecraft/api/bukkit-1.8.8.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -29,6 +20,24 @@
       <library>
         <CLASSES>
           <root url="jar://D:/Programming/Minecraft/test/SkillAPI Tutorial/plugins/SkillAPI.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://D:/Programming/Minecraft/test/SkillAPI Tutorial/plugins/MCCore.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://D:/Programming/Minecraft/lib/instances-1.21.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

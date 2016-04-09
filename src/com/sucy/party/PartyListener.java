@@ -1,5 +1,7 @@
 package com.sucy.party;
 
+import com.sucy.party.hook.Hooks;
+import com.sucy.party.hook.InstancesHook;
 import com.sucy.party.mccore.PartyBoardManager;
 import com.sucy.skill.api.enums.ExpSource;
 import com.sucy.skill.api.event.PlayerExperienceGainEvent;
@@ -57,13 +59,13 @@ public class PartyListener implements Listener {
             }
 
             // Make sure the attacker is a player
-            if (attacker != null) {
-
-                Party targetParty = plugin.getParty(target);
-                Party attackerParty = plugin.getParty(attacker);
+            if (attacker != null)
+            {
+                IParty targetParty = Hooks.getParty(target);
+                IParty attackerParty = Hooks.getParty(attacker);
 
                 // Cancel damage when in the same party
-                if (targetParty != null && targetParty == attackerParty && targetParty.isMember(target) && attackerParty.isMember(attacker)) {
+                if (targetParty != null && targetParty == attackerParty) {
                     event.setCancelled(true);
                 }
             }
@@ -78,13 +80,13 @@ public class PartyListener implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
         if (plugin.isToggled(event.getPlayer().getName())) {
-            Party party = plugin.getParty(event.getPlayer());
+            IParty party = Hooks.getParty(event.getPlayer());
             if (party == null || party.isEmpty()) {
                 plugin.toggle(event.getPlayer().getName());
                 return;
             }
             event.setCancelled(true);
-            plugin.getParty(event.getPlayer()).sendMessage(event.getPlayer(), event.getMessage());
+            party.sendMessage(event.getPlayer(), event.getMessage());
         }
     }
 
@@ -98,7 +100,7 @@ public class PartyListener implements Listener {
         if (event.getSource() == ExpSource.COMMAND) return;
         if (plugin.isDebug()) plugin.getLogger().info("Exp already being shared with " + event.getPlayerData().getPlayerName());
         if (shared) return;
-        Party party = plugin.getParty(event.getPlayerData().getPlayer());
+        IParty party = Hooks.getParty(event.getPlayerData().getPlayer());
         if (plugin.isDebug()) plugin.getLogger().info(event.getPlayerData().getPlayerName() + " has a party? " + (party != null));
         if (party != null) {
             event.setCancelled(true);
@@ -163,7 +165,7 @@ public class PartyListener implements Listener {
      */
     @EventHandler
     public void onPickup(PlayerPickupItemEvent event) {
-        Party party = plugin.getParty(event.getPlayer());
+        IParty party = Hooks.getParty(event.getPlayer());
         if (party != null)
         {
             ItemStack item = event.getItem().getItemStack();

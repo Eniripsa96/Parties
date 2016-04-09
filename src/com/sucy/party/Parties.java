@@ -7,6 +7,7 @@ import com.rit.sucy.config.*;
 import com.rit.sucy.config.parse.DataSection;
 import com.rit.sucy.text.TextFormatter;
 import com.sucy.party.command.*;
+import com.sucy.party.hook.Hooks;
 import com.sucy.party.mccore.PartyBoardManager;
 import com.sucy.skill.SkillAPI;
 import org.bukkit.Bukkit;
@@ -81,6 +82,8 @@ public class Parties extends JavaPlugin {
                 new ConfigurableCommand(this, "toggle", SenderType.PLAYER_ONLY, new CmdToggle(), "Toggles party chat on/off", "", PermissionNode.GENERAL)
         );
         CommandManager.registerCommand(root);
+
+        Hooks.init(this);
     }
 
     /**
@@ -178,7 +181,23 @@ public class Parties extends JavaPlugin {
     }
 
     /**
-     * Retrieves the party that the player is in
+     * Retrieves teh party the player is in
+     *
+     * @param player player to get for
+     * @return joined party
+     */
+    public Party getJoinedParty(Player player)
+    {
+        for (Party party : parties) {
+            if (party.isMember(player)) {
+                return party;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Retrieves the party that the player is in or is invited to
      *
      * @param player player to check
      * @return       party the player is in or null if not found

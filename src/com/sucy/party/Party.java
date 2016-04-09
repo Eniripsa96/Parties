@@ -19,7 +19,7 @@ import java.util.List;
 /**
  * Data for a party
  */
-public class Party {
+public class Party implements IParty {
 
     private ArrayList<String> members = new ArrayList<String>();
     private HashMap<String, Long> invitations = new HashMap<String, Long>();
@@ -189,7 +189,8 @@ public class Party {
         if (invitations.containsKey(vp.getIdString())) {
             invitations.remove(vp.getIdString());
             members.add(vp.getIdString());
-
+            if (members.size() == 2)
+                PartyBoardManager.applyBoard(plugin, getLeader().getPlayer());
             if (plugin.isUsingScoreboard()) {
                 PartyBoardManager.applyBoard(plugin, player);
             }
