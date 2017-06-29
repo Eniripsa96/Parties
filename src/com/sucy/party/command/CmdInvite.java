@@ -1,22 +1,17 @@
 package com.sucy.party.command;
 
-import com.rit.sucy.commands.CommandManager;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
 import com.rit.sucy.config.Filter;
-import com.rit.sucy.player.PlayerUUIDs;
-import com.rit.sucy.version.VersionManager;
-import com.rit.sucy.version.VersionPlayer;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
+import com.sucy.party.inject.Server;
 import com.sucy.party.lang.ErrorNodes;
 import com.sucy.party.lang.IndividualNodes;
 import com.sucy.party.lang.PartyNodes;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-
-import java.util.UUID;
 
 /**
  * Command to invite other players to a party
@@ -50,7 +45,7 @@ public class CmdInvite implements IFunction {
         }
 
         // Validate the player
-        Player target = VersionManager.getPlayer(args[0]);
+        Player target = Server.getPlayer(args[0]);
         if (target == null) {
             parties.sendMessage(player, ErrorNodes.NOT_ONLINE);
             return;

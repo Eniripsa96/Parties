@@ -3,19 +3,24 @@ package com.sucy.party;
 import com.rit.sucy.commands.CommandManager;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.SenderType;
-import com.rit.sucy.config.*;
+import com.rit.sucy.config.CommentedConfig;
+import com.rit.sucy.config.CommentedLanguageConfig;
+import com.rit.sucy.config.CustomFilter;
+import com.rit.sucy.config.FilterType;
 import com.rit.sucy.config.parse.DataSection;
-import com.rit.sucy.text.TextFormatter;
-import com.sucy.party.command.*;
+import com.sucy.party.command.CmdAccept;
+import com.sucy.party.command.CmdDecline;
+import com.sucy.party.command.CmdInfo;
+import com.sucy.party.command.CmdInvite;
+import com.sucy.party.command.CmdLeave;
+import com.sucy.party.command.CmdMsg;
+import com.sucy.party.command.CmdToggle;
 import com.sucy.party.hook.Hooks;
 import com.sucy.party.mccore.PartyBoardManager;
-import com.sucy.skill.SkillAPI;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.stream.events.Comment;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,9 +97,7 @@ public class Parties extends JavaPlugin {
     @Override
     public void onDisable() {
         task.cancel();
-        if (isUsingScoreboard()) {
-            PartyBoardManager.clearBoards(this);
-        }
+        PartyBoardManager.clearBoards(this);
         HandlerList.unregisterAll(this);
         parties.clear();
     }

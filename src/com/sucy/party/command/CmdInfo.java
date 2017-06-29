@@ -3,14 +3,11 @@ package com.sucy.party.command;
 import com.rit.sucy.commands.ConfigurableCommand;
 import com.rit.sucy.commands.IFunction;
 import com.rit.sucy.config.CustomFilter;
-import com.rit.sucy.config.Filter;
 import com.rit.sucy.text.TextSizer;
-import com.rit.sucy.version.VersionPlayer;
 import com.sucy.party.Parties;
 import com.sucy.party.Party;
 import com.sucy.party.lang.ErrorNodes;
 import com.sucy.party.lang.IndividualNodes;
-import com.sucy.party.lang.PartyNodes;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -40,7 +37,7 @@ public class CmdInfo implements IFunction {
         if (party != null && party.isMember(player)) {
             StringBuilder members = new StringBuilder();
             for (String member : party.getMembers()) {
-                members.append(new VersionPlayer(member).getName());
+                members.append(member);
                 members.append(", ");
             }
             parties.sendMessage(

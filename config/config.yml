@@ -1,0 +1,38 @@
+# Maximum size of a party
+max-size: 4
+
+# How long an invitation lasts in seconds
+# before it is automatically cancelled
+invite-timeout: 30
+
+# Whether or not to remove players
+# when they disconnect
+remove-on-dc: false
+
+# Whether or not to assign a new party leader
+# when the current one disconnects
+new-leader-on-dc: true
+
+# Whether or not to use the scoreboard for
+# displaying party information
+use-scoreboard: false
+
+# Whether or not only the leader of a party
+# can invite new members
+only-leader-invites: true
+
+# Modifications to experience gained
+exp-modifications:
+
+  # Modifier for the number of members
+  # normally ranging from 0 to 1
+  # 0 -> Full experience for all members
+  # 1 -> Evenly split experience
+  members: 1.0
+
+  # Modifier for the difference in level
+  # between party members
+  # Generally should be small decimals
+  # (0 - 0.01 is a good range)
+  # 0 -> No change in experience
+  level: 0.0

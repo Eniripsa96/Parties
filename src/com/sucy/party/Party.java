@@ -1,12 +1,10 @@
 package com.sucy.party;
 
 import com.rit.sucy.config.Filter;
-import com.rit.sucy.version.VersionManager;
-import com.rit.sucy.version.VersionPlayer;
+import com.sucy.party.inject.Server;
 import com.sucy.party.lang.IndividualNodes;
 import com.sucy.party.lang.PartyNodes;
 import com.sucy.party.mccore.PartyBoardManager;
-import com.sucy.skill.SkillAPI;
 import com.sucy.skill.api.enums.ExpSource;
 import com.sucy.skill.api.player.PlayerClass;
 import com.sucy.skill.api.player.PlayerData;
@@ -24,7 +22,7 @@ public class Party implements IParty {
     private ArrayList<String> members = new ArrayList<String>();
     private HashMap<String, Long> invitations = new HashMap<String, Long>();
     private Parties plugin;
-    private VersionPlayer partyLeader;
+    private Player partyLeader;
     private int nextId = -1;
 
     /**
@@ -35,8 +33,8 @@ public class Party implements IParty {
      */
     public Party(Parties plugin, Player leader) {
         this.plugin = plugin;
-        this.partyLeader = new VersionPlayer(leader);
-        members.add(partyLeader.getIdString());
+        this.partyLeader = leader;
+        members.add(partyLeader.getName());
     }
 
     /**
@@ -60,7 +58,7 @@ public class Party implements IParty {
      *
      * @return party leader
      */
-    public VersionPlayer getLeader() {
+    public Player getLeader() {
         return partyLeader;
     }
 
@@ -75,7 +73,7 @@ public class Party implements IParty {
         {
             nextId = (nextId + 1) % members.size();
         }
-        while ((member = VersionManager.getPlayer(members.get(nextId))) == null);
+        while ((member = Server.getPlayer(members.get(nextId))) == null);
         return member;
     }
 
@@ -88,7 +86,7 @@ public class Party implements IParty {
         Player member;
         do {
             int id = (int)(Math.random() * members.size());
-            member = VersionManager.getPlayer(members.get(id));
+            member = Server.getPlayer(members.get(id));
         }
         while (member == null);
         return member;
@@ -102,7 +100,7 @@ public class Party implements IParty {
         for (String member : members) {
             if (invitations.get(member) < System.currentTimeMillis()) {
                 invitations.remove(member);
-                Player player = new VersionPlayer(member).getPlayer();
+                Player player = Server.getPlayer(member);
                 if (player != null) {
                     sendMessages(plugin.getMessage(PartyNodes.NO_RESPONSE, true, Filter.PLAYER.setReplacement(player.getName())));
                     plugin.sendMessage(player, IndividualNodes.NO_RESPONSE);
@@ -131,7 +129,7 @@ public class Party implements IParty {
     public int getOnlinePartySize() {
         int counter = 0;
         for (String member : members) {
-            if (new VersionPlayer(member).getPlayer() != null) counter++;
+            if (Server.isOnline(member)) counter++;
         }
         return counter;
     }
@@ -143,7 +141,7 @@ public class Party implements IParty {
      * @return       true if on the team, false otherwise
      */
     public boolean isMember(Player player) {
-        return members.contains(new VersionPlayer(player).getIdString());
+        return members.contains(player.getName());
     }
 
     /**
@@ -154,7 +152,7 @@ public class Party implements IParty {
      */
     public boolean isInvited(Player player) {
         checkInvitations();
-        return invitations.containsKey(new VersionPlayer(player).getIdString());
+        return invitations.containsKey(player.getName());
     }
 
     /**
@@ -164,7 +162,7 @@ public class Party implements IParty {
      * @return       true if they're the leader, false otherwise
      */
     public boolean isLeader(Player player) {
-        return partyLeader.getPlayer() == player;
+        return partyLeader.equals(player);
     }
 
     /**
@@ -173,9 +171,8 @@ public class Party implements IParty {
      * @param player player to add
      */
     public void invite(Player player) {
-        VersionPlayer vp = new VersionPlayer(player);
-        if (!members.contains(vp.getIdString()) && !invitations.containsKey(vp.getIdString())) {
-            invitations.put(vp.getIdString(), System.currentTimeMillis() + plugin.getInviteTimeout());
+        if (!members.contains(player.getName()) && !invitations.containsKey(player.getName())) {
+            invitations.put(player.getName(), System.currentTimeMillis() + plugin.getInviteTimeout());
         }
     }
 
@@ -185,15 +182,12 @@ public class Party implements IParty {
      * @param player player to accept
      */
     public void accept(Player player) {
-        VersionPlayer vp = new VersionPlayer(player);
-        if (invitations.containsKey(vp.getIdString())) {
-            invitations.remove(vp.getIdString());
-            members.add(vp.getIdString());
+        if (invitations.containsKey(player.getName())) {
+            invitations.remove(player.getName());
+            members.add(player.getName());
             if (members.size() == 2)
-                PartyBoardManager.applyBoard(plugin, getLeader().getPlayer());
-            if (plugin.isUsingScoreboard()) {
-                PartyBoardManager.applyBoard(plugin, player);
-            }
+                PartyBoardManager.applyBoard(plugin, getLeader());
+            PartyBoardManager.applyBoard(plugin, player);
         }
     }
 
@@ -201,9 +195,8 @@ public class Party implements IParty {
      * @param player player to decline
      */
     public void decline(Player player) {
-        VersionPlayer vp = new VersionPlayer(player);
-        if (invitations.containsKey(vp.getIdString())) {
-            invitations.remove(vp.getIdString());
+        if (invitations.containsKey(player.getName())) {
+            invitations.remove(player.getName());
         }
     }
 
@@ -213,16 +206,13 @@ public class Party implements IParty {
      * @param player player to remove
      */
     public void removeMember(Player player) {
-        VersionPlayer vp = new VersionPlayer(player);
-        if (members.contains(vp.getIdString())) {
-            members.remove(vp.getIdString());
+        if (members.contains(player.getName())) {
+            members.remove(player.getName());
         }
         if (isLeader(player) && members.size() > 0) {
-            partyLeader = new VersionPlayer(members.get(0));
+            changeLeader();
         }
-        if (plugin.isUsingScoreboard()) {
-            PartyBoardManager.clearBoard(plugin, player);
-        }
+        PartyBoardManager.clearBoard(plugin, player);
     }
 
     /**
@@ -230,8 +220,8 @@ public class Party implements IParty {
      */
     public void changeLeader() {
         for (String member : members) {
-            if (new VersionPlayer(member).getPlayer() != null) {
-                partyLeader = new VersionPlayer(member);
+            if (Server.isOnline(member)) {
+                partyLeader = Server.getPlayer(member);
                 sendMessages(plugin.getMessage(PartyNodes.NEW_LEADER, true, Filter.PLAYER.setReplacement(partyLeader.getName())));
             }
         }
@@ -242,7 +232,7 @@ public class Party implements IParty {
      */
     public void removeBoards() {
         for (String member : members) {
-            Player player = new VersionPlayer(member).getPlayer();
+            Player player = Server.getPlayer(member);
             if (player != null) {
                 PartyBoardManager.clearBoard(plugin, player);
             }
@@ -263,18 +253,16 @@ public class Party implements IParty {
 
         // Member modifier
         double baseAmount = amount / (1 + (getOnlinePartySize() - 1) * plugin.getMemberModifier());
-        PlayerData data = SkillAPI.getPlayerData(source);
-        PlayerClass main = data.getMainClass();
-        int level = main == null ? 0 : main.getLevel();
+        int level = Server.getLevel(source.getName());
 
         // Grant exp to all members
         for (String member : members) {
 
             // Player must be online
-            Player player = new VersionPlayer(member).getPlayer();
+            Player player = Server.getPlayer(member);
             if (player != null) {
-                PlayerData info = SkillAPI.getPlayerData(player);
-                main = info.getMainClass();
+                PlayerData info = Server.getPlayerData(player);
+                PlayerClass main = info.getMainClass();
                 int lvl = main == null ? 0 : main.getLevel();
                 int exp = (int)Math.ceil(baseAmount);
 
@@ -296,9 +284,8 @@ public class Party implements IParty {
      */
     public void sendMessage(String message) {
         for (String member : members) {
-            Player player = new VersionPlayer(member).getPlayer();
-            if (player != null) {
-                player.sendMessage(message);
+            if (Server.isOnline(member)) {
+                Server.getPlayer(member).sendMessage(message);
             }
         }
     }
@@ -310,11 +297,8 @@ public class Party implements IParty {
      */
     public void sendMessages(List<String> messages) {
         for (String member : members) {
-            Player player = new VersionPlayer(member).getPlayer();
-            if (player != null) {
-                for (String message : messages) {
-                    player.sendMessage(message);
-                }
+            if (Server.isOnline(member)) {
+                Server.getPlayer(member).sendMessage(messages.toArray(new String[messages.size()]));
             }
         }
     }
@@ -326,15 +310,7 @@ public class Party implements IParty {
      * @param message message the player typed
      */
     public void sendMessage(Player sender, String message) {
-        List<String> messages = plugin.getMessage(PartyNodes.CHAT_MESSAGE, true, Filter.PLAYER.setReplacement(sender.getName()), Filter.MESSAGE.setReplacement(message));
-        for (String member : members) {
-            Player player = new VersionPlayer(member).getPlayer();
-            if (player != null) {
-                for (String line : messages) {
-                    player.sendMessage(line);
-                }
-            }
-        }
+        sendMessages(plugin.getMessage(PartyNodes.CHAT_MESSAGE, true, Filter.PLAYER.setReplacement(sender.getName()), Filter.MESSAGE.setReplacement(message)));
     }
 
     /**
@@ -355,7 +331,7 @@ public class Party implements IParty {
     public void updateBoards() {
         removeBoards();
         for (String member : members) {
-            PartyBoardManager.applyBoard(plugin, new VersionPlayer(member).getPlayer());
+            PartyBoardManager.applyBoard(plugin, Server.getPlayer(member));
         }
     }
 }

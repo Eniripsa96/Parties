@@ -1,11 +1,9 @@
 package com.sucy.party;
 
 import com.sucy.party.hook.Hooks;
-import com.sucy.party.hook.InstancesHook;
 import com.sucy.party.mccore.PartyBoardManager;
 import com.sucy.skill.api.enums.ExpSource;
 import com.sucy.skill.api.event.PlayerExperienceGainEvent;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -119,7 +117,7 @@ public class PartyListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
         Party party = plugin.getParty(event.getPlayer());
-        if (plugin.isUsingScoreboard() && party != null && !party.isEmpty()) {
+        if (party != null && !party.isEmpty()) {
             PartyBoardManager.applyBoard(plugin, event.getPlayer());
         }
     }

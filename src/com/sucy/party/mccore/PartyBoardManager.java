@@ -19,6 +19,9 @@ public class PartyBoardManager {
      * @param player player to apply to
      */
     public static void applyBoard(Parties plugin, Player player) {
+        if (!plugin.isUsingScoreboard()) {
+            return;
+        }
 
         String title = plugin.getMessage(PartyNodes.SCOREBOARD, false).get(0);
 
@@ -36,6 +39,9 @@ public class PartyBoardManager {
      * @param player player to remove for
      */
     public static void clearBoard(Parties plugin, Player player) {
+        if (!plugin.isUsingScoreboard()) {
+            return;
+        }
         BoardManager.getPlayerBoards(player.getName()).removeBoards(plugin.getName());
     }
 
@@ -45,6 +51,9 @@ public class PartyBoardManager {
      * @param plugin plugin reference
      */
     public static void clearBoards(Parties plugin) {
+        if (!plugin.isUsingScoreboard()) {
+            return;
+        }
         BoardManager.clearPluginBoards(plugin.getName());
     }
 }

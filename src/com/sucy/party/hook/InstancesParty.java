@@ -27,7 +27,6 @@
 package com.sucy.party.hook;
 
 import com.rit.sucy.config.Filter;
-import com.rit.sucy.version.VersionPlayer;
 import com.sucy.party.IParty;
 import com.sucy.party.Parties;
 import com.sucy.party.lang.PartyNodes;
